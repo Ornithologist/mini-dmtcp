@@ -11,6 +11,8 @@ The concept of mini-dmtcp can be broken down to 3 steps:
 2. libckpt.so takes the registers of the target program and dumps it into the image file. It also reads the /proc/{pid}/maps file to fetch all memory regions of the target program, then it saves these meta data together with the memory region contents into the image file.
 3. the restart program takes in the filename of the checkpoint image as argument, and tries to restore the memory and registers from it. Once done, the target program will restart from the point it was checkpointed.
 
+An integer flag was used in libckpt.so for it to differentiate whether the current process is checkpointing or restarting.
+
 System calls including open(), read(), write(), getcontext(), setcontext(), mmap(), munmap(), and inline assembly are the only techniques used here.
 
 
