@@ -1,0 +1,41 @@
+-----------------------------------------------
+Build
+-----------------------------------------------
+
+To build, use:
+    make
+
+You may want to use 
+    make clean
+to clean up the previous compilation, along with the check point image.
+
+Use
+    make libckpt.so
+to make the libckpt shared object file
+
+Use
+    make restart
+to compile the 'restart' program
+
+-----------------------------------------------
+Run
+-----------------------------------------------
+
+To run, use
+    make check
+to (1) run and halt the target 'hello' program, and (2) produce a checkpoint image for the target 'hello' program
+
+On success of the check, you will see the message "Checkpoint image created" appear on your console
+
+Use
+    make res
+to restart the 'hello' program
+
+-----------------------------------------------
+Test
+-----------------------------------------------
+
+To test, use
+    make gdb
+to intialise the 'restart' program with gdb 
+
