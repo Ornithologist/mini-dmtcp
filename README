@@ -3,8 +3,10 @@ Intro
 -----------------------------------------------
 
 mini-dmtpc is a self-contained software for checkpoint-restart.
+
 It is one of my class assignments to emulate the concept of DMTCP: http://dmtcp.sourceforge.net/. However, one do not need prior knowledge of DMTCP to understand or make mini-dmtcp.
-This version has several differences from my final submission to class assignment, mainly in terms of code refactor, styling, and sanity checks.
+
+This version has several differences from the final submission of assignment, mainly in terms of code refactor, styling, and sanity checks.
 
 The concept of mini-dmtcp can be broken down to 3 steps:
 
@@ -62,4 +64,23 @@ Test
 To test, use
     make gdb
 to intialise the 'restart' program with gdb.
+
+
+
+-----------------------------------------------
+File Structure
+-----------------------------------------------
+
+# common structures and utilities
+common.ha
+
+# main programs
+ckpt.c
+restart.c
+
+# target program
+hello.c
+
+# make
+makefile
 
