@@ -1,6 +1,7 @@
 -----------------------------------------------
 Intro
 -----------------------------------------------
+
 mini-dmtpc is a self-contained software for checkpoint-restart.
 It is one of my class assignments to emulate the concept of DMTCP: http://dmtcp.sourceforge.net/. However, one do not need prior knowledge of DMTCP to understand or make mini-dmtcp.
 This version has several differences from my final submission to class assignment, mainly in terms of code refactor, styling, and sanity checks.
@@ -14,6 +15,7 @@ The concept of mini-dmtcp can be broken down to 3 steps:
 An integer flag was used in libckpt.so for it to tell whether the current process is checkpointing or restarting.
 
 System calls including open(), read(), write(), getcontext(), setcontext(), mmap(), munmap(), and inline assembly are the only techniques used here.
+
 
 
 -----------------------------------------------
@@ -35,6 +37,8 @@ Use
     make restart
 to compile the 'restart' program.
 
+
+
 -----------------------------------------------
 Run
 -----------------------------------------------
@@ -48,6 +52,8 @@ On success of the check, you will see the message "Checkpoint image created" app
 Use
     make res
 to restart the 'hello' program.
+
+
 
 -----------------------------------------------
 Test
