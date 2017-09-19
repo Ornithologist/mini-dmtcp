@@ -19,21 +19,19 @@ int flag = 0;
 
 // main processes
 void my_handler(int sig);
-int catch_a_check(int pid);
+int catch_a_check();
 int put_a_check(struct MemoryRegion *mrs, int mrsc, ucontext_t *ucp);
 int write_context(int fp, ucontext_t *ucp);
 int write_memory(int fp, int mrsc, struct MemoryRegion *mrs);
 
 // utility functions
-int get_memory_regions(int pid, struct MemoryRegion *mrs);
-char *get_file_path(int pid);
-char *stringify_pid(int pid);
-long int my_pow(int base, int expo);
+int get_memory_regions(struct MemoryRegion *mrs);
+unsigned long long my_pow(int base, int expo);
 int get_cell(char *cell, int fp);
 void *get_line(int fp);
 void convert_addr_cell(struct MemoryRegion *mr, char *cell);
 void convert_privilege_cell(struct MemoryRegion *mr, char *cell);
-long int hex_to_int(char *hex_str);
+unsigned long long hex_to_long(char *hex_str);
 
 
 __attribute__ ((constructor))
@@ -43,7 +41,7 @@ void checkpointer() {
 
 void my_handler(int sig) {
 	signal(sig, SIG_DFL);       // react with default behavior
-	int catch_result = catch_a_check((int) getpid());
+	int catch_result = catch_a_check();
     if (catch_result == 0)
 		return;
 	return;
@@ -53,7 +51,7 @@ void my_handler(int sig) {
  * return 0 if failed to catch
  * return 1 if succeeded
  */
-int catch_a_check(int pid) {
+int catch_a_check() {
     struct MemoryRegion *mrs;   // memory regions, to be saved
     int mrs_count;              // number of mr(s), to be saved
     ucontext_t uc;            	// the context of the calling thread, to be saved
@@ -62,7 +60,7 @@ int catch_a_check(int pid) {
 
     // get memory regions
     mrs = (struct MemoryRegion *) malloc(MAX_MR_PER_PROC * sizeof(struct MemoryRegion));
-    mrs_count = get_memory_regions(pid, mrs);
+    mrs_count = get_memory_regions(mrs);
 
     if (mrs_count == 0) {
 		printf("Failed to read memory regions.\n");  // just be sure
@@ -163,14 +161,14 @@ int write_memory(int fp, int mrsc, struct MemoryRegion *mrs) {
  * return 0 when reading error
  * return the number of memory regions when all good
  */
-int get_memory_regions(int pid, struct MemoryRegion *mrs) {
+int get_memory_regions(struct MemoryRegion *mrs) {
     int rfp;					// file descriptor for reading
     int count;                  // memory region count
     char *rfpath;				// file path for read
     struct MemoryRegion *pmr;	// the pointer to the currently read memory region
 
 	// get memory maps file path
-	rfpath = get_file_path(pid);
+	rfpath = "/proc/self/maps";
 
 	// get memory maps file descriptor
 	rfp = open(rfpath, O_RDONLY);
@@ -193,52 +191,10 @@ int get_memory_regions(int pid, struct MemoryRegion *mrs) {
 }
 
 /*
- * return "/proc/${pid}/maps"
+ * return (unsigned long long) (base ^ expo)
  */
-char *get_file_path(int pid) {
-	char *pid_str = stringify_pid(pid);
-	char *dir_prefix = "/proc/";
-	char *dir_suffix = "/maps";
-
-	int total_len = strlen(dir_prefix) + strlen(pid_str) + strlen(dir_suffix);
-	char *fpath = (char *) malloc(total_len * sizeof(char));
-	strcpy(fpath, dir_prefix);
-	strcat(fpath, pid_str);
-	strcat(fpath, dir_suffix);
-	free(pid_str);
-	return fpath;
-}
-
-/*
- * return stringified pit_int
- */
-char *stringify_pid(int pid_int) {
-	int num_of_digits;
-	int pid_to_slice = pid_int;
-	int pid_divided = pid_int;
-	int i;
-
-	num_of_digits = 0;
-	while(pid_divided>=1) {
-		++num_of_digits;
-		pid_divided = pid_divided / 10;
-	}
-
-	char *pid_string = (char *) malloc(num_of_digits * sizeof(char));
-	for (i=0; i<num_of_digits; i++) {
-		long int power = my_pow(10, (num_of_digits - 1 - i));
-		long int digit = pid_to_slice / power;
-		pid_to_slice = pid_to_slice - digit * power;
-		pid_string[i] = '0' + digit;
-	}
-	return pid_string;
-}
-
-/*
- * return (long int) (base ^ expo)
- */
-long int my_pow(int base, int expo) {
-	long int result = 1;
+unsigned long long my_pow(int base, int expo) {
+	unsigned long long result = 1;
 	while(expo>0) {
 		--expo;
 		result = result * base;
@@ -318,7 +274,7 @@ void convert_addr_cell(struct MemoryRegion *mr, char *cell) {
 	int clen = strlen(cell);
 	int delimited = 0;
 	int delimited_offset;
-	long int sa, ea;
+	unsigned long long sa, ea;
 	char *start_addr = (char *) malloc(MAX_CELL_LEN * sizeof(char));
 	char *end_addr = (char *) malloc(MAX_CELL_LEN * sizeof(char));
 
@@ -333,8 +289,8 @@ void convert_addr_cell(struct MemoryRegion *mr, char *cell) {
 			end_addr[i-delimited_offset] = cell[i];
 	}
 
-	sa = hex_to_int(start_addr);
-	ea = hex_to_int(end_addr);
+	sa = hex_to_long(start_addr);
+	ea = hex_to_long(end_addr);
 
 	mr->startAddr = (void *) (long) sa;
 	mr->endAddr = (void *) (long) ea;
@@ -344,14 +300,14 @@ void convert_addr_cell(struct MemoryRegion *mr, char *cell) {
 /*
  * return base 10 value of the hex string
  */
-long int hex_to_int(char *hex_str) {
+unsigned long long hex_to_long(char *hex_str) {
     int i;
-	long int res = 0;
-    long int num_of_digits = strlen(hex_str);
+	unsigned long long res = 0;
+    unsigned long long num_of_digits = strlen(hex_str);
 	for (i=0; i<num_of_digits; i++) {
 		char cur_digit = hex_str[i];
-		long int b = 0;
-		long int expo = num_of_digits - 1 - i;
+		unsigned long long b = 0;
+		unsigned long long expo = num_of_digits - 1 - i;
 		if (cur_digit - '0' < 10)
 			b = cur_digit - '0';
 		else
