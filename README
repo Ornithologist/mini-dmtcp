@@ -1,4 +1,20 @@
 -----------------------------------------------
+Intro
+-----------------------------------------------
+mini-dmtpc is a self-contained software for checkpoint-restart.
+It is one of my class assignments to emulate the concept of DMTCP: http://dmtcp.sourceforge.net/. However, one do not need prior knowledge of DMTCP to understand or make mini-dmtcp.
+This version has several differences from my final submission to class assignment, mainly in terms of code refactor, styling, and sanity checks.
+
+The concept of mini-dmtcp can be broken down to 3 steps:
+
+1. the libckpt.so listens to a trigger on the target program 'hello' -- once triggered it will start checkpointing;
+2. libckpt.so takes the registers of the target program and dumps it into the image file. It also reads the /proc/{pid}/maps file to fetch all memory regions of the target program, then it saves these meta data together with the memory region contents into the image file.
+3. the restart program takes in the filename of the checkpoint image as argument, and tries to restore the memory and registers from it. Once done, the target program will restart from the point it was checkpointed.
+
+System calls including open(), read(), write(), getcontext(), setcontext(), mmap(), munmap(), and inline assembly are the only techniques used here.
+
+
+-----------------------------------------------
 Build
 -----------------------------------------------
 
